@@ -24,8 +24,15 @@ func main() {
 		log.Println("peringatan: .env tidak ditemukan, gunakan variabel lingkungan sistem")
 	}
 
+	if os.Getenv("UPLOAD_PATH") == "" {
+		if _, err := os.Stat("backend/uploads"); err == nil {
+			_ = os.Setenv("UPLOAD_PATH", "backend/uploads")
+		}
+	}
+
 	config.ConnectDatabase()
 	utils.InitJWT()
+	utils.InitUploadDir()
 
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)

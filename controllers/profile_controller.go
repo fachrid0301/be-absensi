@@ -10,14 +10,9 @@ import (
 )
 
 func Profile(c *gin.Context) {
-	v, ok := c.Get(middleware.ContextUserKey)
+	claims, ok := middleware.GetClaims(c)
 	if !ok {
 		utils.JSONError(c, http.StatusUnauthorized, "tidak terautentikasi", nil)
-		return
-	}
-	claims, ok := v.(*utils.Claims)
-	if !ok {
-		utils.JSONError(c, http.StatusInternalServerError, "klaim tidak valid", nil)
 		return
 	}
 
