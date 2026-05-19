@@ -38,13 +38,18 @@ func AbsensiMasuk(c *gin.Context) {
 	}
 
 	today := utils.TodayDate()
+
 	var existing models.Absensi
-	err = config.DB.Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today.Format("2006-01-02")).First(&existing).Error
+	err = config.DB.
+		Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today.Format("2006-01-02")).
+		First(&existing).Error
+
 	if err == nil {
 		utils.JSONError(c, http.StatusConflict, "anda sudah absen masuk hari ini", nil)
 		return
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memeriksa absensi", nil)
 		return
 	}
