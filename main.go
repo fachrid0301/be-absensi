@@ -2,15 +2,39 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
+	"strings"
 
-	"be-absensi/backend/config"
-	"be-absensi/backend/routes"
-	"be-absensi/backend/utils"
+	"be-absensi/config"
+	"be-absensi/routes"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		allowedOrigin := "*"
+		if strings.HasPrefix(origin, "http://localhost:") || strings.HasPrefix(origin, "https://localhost:") {
+			allowedOrigin = origin
+		}
+
+		c.Header("Access-Control-Allow-Origin", allowedOrigin)
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
 
 func main() {
 	loaded := false
@@ -39,6 +63,7 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(corsMiddleware())
 	routes.Register(r)
 
 	addr := os.Getenv("PORT")
