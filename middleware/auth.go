@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"be-absensi/backend/utils"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 )

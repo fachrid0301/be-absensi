@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
-	"be-absensi/backend/middleware"
-	"be-absensi/backend/utils"
+	"be-absensi/middleware"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 )

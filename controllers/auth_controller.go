@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"be-absensi/backend/config"
-	"be-absensi/backend/models"
-	"be-absensi/backend/utils"
+	"be-absensi/config"
+	"be-absensi/models"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
