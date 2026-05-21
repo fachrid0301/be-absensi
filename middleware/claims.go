@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"be-absensi/backend/utils"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 )

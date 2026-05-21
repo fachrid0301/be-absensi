@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"be-absensi/backend/controllers"
-	"be-absensi/backend/middleware"
-	"be-absensi/backend/utils"
+	"be-absensi/controllers"
+	"be-absensi/middleware"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 )

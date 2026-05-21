@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"be-absensi/backend/config"
-	"be-absensi/backend/middleware"
-	"be-absensi/backend/models"
-	"be-absensi/backend/utils"
+	"be-absensi/config"
+	"be-absensi/middleware"
+	"be-absensi/models"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
