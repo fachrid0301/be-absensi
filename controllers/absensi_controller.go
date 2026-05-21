@@ -67,7 +67,7 @@ func AbsensiMasuk(c *gin.Context) {
 	}
 
 	now := time.Now()
-	jam := utils.TimeOnly(now)
+	jam := now.Format("15:04:05")
 	status := utils.AttendanceStatus(now)
 
 	abs := models.Absensi{
@@ -127,7 +127,7 @@ func AbsensiPulang(c *gin.Context) {
 	}
 
 	now := time.Now()
-	jam := utils.TimeOnly(now)
+	jam := now.Format("15:04:05")
 	abs.JamPulang = &jam
 
 	if err := config.DB.Save(&abs).Error; err != nil {
