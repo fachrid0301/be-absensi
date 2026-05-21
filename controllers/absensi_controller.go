@@ -84,6 +84,7 @@ func AbsensiMasuk(c *gin.Context) {
 		return
 	}
 
+	abs.FillKeterangan()
 	utils.JSONSuccess(c, http.StatusCreated, "absensi masuk berhasil", abs)
 }
 
@@ -172,6 +173,9 @@ func AbsensiHistory(c *gin.Context) {
 	if err := q.Find(&list).Error; err != nil {
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat riwayat absensi", nil)
 		return
+	}
+	for i := range list {
+		list[i].FillKeterangan()
 	}
 	utils.JSONSuccess(c, http.StatusOK, "riwayat absensi", list)
 }
