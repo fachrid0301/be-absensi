@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"be-absensi/backend/utils"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 )

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"be-absensi/backend/config"
-	"be-absensi/backend/middleware"
-	"be-absensi/backend/models"
-	"be-absensi/backend/utils"
+	"be-absensi/config"
+	"be-absensi/middleware"
+	"be-absensi/models"
+	"be-absensi/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -41,7 +41,7 @@ func AbsensiMasuk(c *gin.Context) {
 
 	var existing models.Absensi
 	err = config.DB.
-		Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today.Format("2006-01-02")).
+		Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today).
 		First(&existing).Error
 
 	if err == nil {
@@ -67,7 +67,7 @@ func AbsensiMasuk(c *gin.Context) {
 	}
 
 	now := time.Now()
-	jam := utils.TimeOnly(now)
+	jam := now.Format("15:04:05")
 	status := utils.AttendanceStatus(now)
 
 	abs := models.Absensi{
@@ -106,7 +106,7 @@ func AbsensiPulang(c *gin.Context) {
 
 	today := utils.TodayDate()
 	var abs models.Absensi
-	err = config.DB.Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today.Format("2006-01-02")).First(&abs).Error
+	err = config.DB.Where("id_peserta = ? AND tanggal = ?", peserta.IDPeserta, today).First(&abs).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		utils.JSONError(c, http.StatusBadRequest, "belum absen masuk hari ini", nil)
 		return
@@ -126,7 +126,7 @@ func AbsensiPulang(c *gin.Context) {
 	}
 
 	now := time.Now()
-	jam := utils.TimeOnly(now)
+	jam := now.Format("15:04:05")
 	abs.JamPulang = &jam
 
 	if err := config.DB.Save(&abs).Error; err != nil {
@@ -161,11 +161,15 @@ func AbsensiHistory(c *gin.Context) {
 		q = q.Where("id_peserta = ?", idPeserta)
 	}
 
-	if from := c.Query("from"); from != "" {
-		q = q.Where("tanggal >= ?", from)
+	if fromStr := c.Query("from"); fromStr != "" {
+		if from, err := time.Parse("2006-01-02", fromStr); err == nil {
+			q = q.Where("tanggal >= ?", from)
+		}
 	}
-	if to := c.Query("to"); to != "" {
-		q = q.Where("tanggal <= ?", to)
+	if toStr := c.Query("to"); toStr != "" {
+		if to, err := time.Parse("2006-01-02", toStr); err == nil {
+			q = q.Where("tanggal <= ?", to)
+		}
 	}
 
 	var list []models.Absensi
