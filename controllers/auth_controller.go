@@ -14,9 +14,13 @@ import (
 )
 
 type registerBody struct {
-	Nama     string `json:"nama" binding:"required,min=2,max=100"`
-	Email    string `json:"email" binding:"required,email,max=100"`
-	Password string `json:"password" binding:"required,min=8,max=72"`
+	Nama         string  `json:"nama" binding:"required,min=2,max=100"`
+	Email        string  `json:"email" binding:"required,email,max=100"`
+	Password     string  `json:"password" binding:"required,min=8,max=72"`
+	NimNis       string  `json:"nim_nis" binding:"required,max=50"`
+	AsalInstansi string  `json:"asal_instansi" binding:"required,max=150"`
+	Jurusan      string  `json:"jurusan" binding:"required,max=100"`
+	NoHP         *string `json:"no_hp" binding:"omitempty,max=20"`
 }
 
 type loginBody struct {
@@ -33,6 +37,17 @@ func Register(c *gin.Context) {
 
 	body.Email = strings.TrimSpace(strings.ToLower(body.Email))
 	body.Nama = strings.TrimSpace(body.Nama)
+	body.NimNis = strings.TrimSpace(body.NimNis)
+	body.AsalInstansi = strings.TrimSpace(body.AsalInstansi)
+	body.Jurusan = strings.TrimSpace(body.Jurusan)
+	if body.NoHP != nil {
+		trimmed := strings.TrimSpace(*body.NoHP)
+		if trimmed == "" {
+			body.NoHP = nil
+		} else {
+			body.NoHP = &trimmed
+		}
+	}
 
 	hash, err := utils.HashPassword(body.Password)
 	if err != nil {
@@ -46,17 +61,34 @@ func Register(c *gin.Context) {
 		Password: hash,
 		Role:     "peserta",
 	}
+	peserta := models.Peserta{
+		NimNis:       body.NimNis,
+		AsalInstansi: body.AsalInstansi,
+		Jurusan:      body.Jurusan,
+		NoHP:         body.NoHP,
+		StatusPKL:    "pending",
+	}
 
-	if err := config.DB.Create(&u).Error; err != nil {
+	err = config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&u).Error; err != nil {
+			return err
+		}
+		peserta.IDUser = u.IDUser
+		return tx.Create(&peserta).Error
+	})
+	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(strings.ToLower(err.Error()), "duplicate") {
 			utils.JSONError(c, http.StatusConflict, "email sudah terdaftar", nil)
 			return
 		}
-		utils.JSONError(c, http.StatusInternalServerError, "gagal menyimpan pengguna", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal menyimpan registrasi", nil)
 		return
 	}
 
-	utils.JSONSuccess(c, http.StatusCreated, "registrasi berhasil", u.ToPublic())
+	utils.JSONSuccess(c, http.StatusCreated, "registrasi berhasil", gin.H{
+		"user":    u.ToPublic(),
+		"peserta": peserta,
+	})
 }
 
 func Login(c *gin.Context) {
