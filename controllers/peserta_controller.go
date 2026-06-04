@@ -128,6 +128,12 @@ func UpdatePeserta(c *gin.Context) {
 	}
 	if body.StatusPKL != "" {
 		p.StatusPKL = body.StatusPKL
+		// Sinkronkan status pada tabel pendaftaran jika sudah ada
+		var pendaftar models.Pendaftaran
+		if err := config.DB.Where("id_user = ?", p.IDUser).First(&pendaftar).Error; err == nil {
+			pendaftar.Status = p.StatusPKL
+			_ = config.DB.Save(&pendaftar)
+		}
 	}
 	if body.IDUser != 0 && body.IDUser != p.IDUser {
 		var user models.User

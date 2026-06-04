@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"be-absensi/config"
+	"be-absensi/models"
 	"be-absensi/routes"
 	"be-absensi/utils"
 
@@ -55,6 +56,9 @@ func main() {
 	}
 
 	config.ConnectDatabase()
+	if err := config.DB.AutoMigrate(&models.Pendaftaran{}); err != nil {
+		log.Printf("gagal auto migrate pendaftaran: %v", err)
+	}
 	utils.InitJWT()
 	utils.InitUploadDir()
 

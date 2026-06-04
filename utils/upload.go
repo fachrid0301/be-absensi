@@ -65,6 +65,10 @@ func AllowedPDFExt() map[string]bool {
 	return map[string]bool{".pdf": true}
 }
 
+func AllowedDocExt() map[string]bool {
+	return map[string]bool{".pdf": true, ".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
+}
+
 const MaxImageSize = 5 * 1024 * 1024  // 5MB
 const MaxPDFSize = 10 * 1024 * 1024   // 10MB
 

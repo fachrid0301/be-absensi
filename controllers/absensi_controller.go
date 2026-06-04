@@ -37,6 +37,17 @@ func AbsensiMasuk(c *gin.Context) {
 		return
 	}
 
+	if peserta.StatusPKL != "diterima" {
+		msg := "Pendaftaran Anda belum disetujui. Anda tidak dapat melakukan absensi."
+		if peserta.StatusPKL == "pending" {
+			msg = "Pendaftaran Anda masih ditinjau. Silakan tunggu persetujuan admin."
+		} else if peserta.StatusPKL == "ditolak" {
+			msg = "Pendaftaran Anda ditolak. Anda tidak diperkenankan melakukan absensi."
+		}
+		utils.JSONError(c, http.StatusForbidden, msg, nil)
+		return
+	}
+
 	today := utils.TodayDate()
 
 	var existing models.Absensi
@@ -102,6 +113,17 @@ func AbsensiPulang(c *gin.Context) {
 			return
 		}
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat peserta", nil)
+		return
+	}
+
+	if peserta.StatusPKL != "diterima" {
+		msg := "Pendaftaran Anda belum disetujui. Anda tidak dapat melakukan absensi."
+		if peserta.StatusPKL == "pending" {
+			msg = "Pendaftaran Anda masih ditinjau. Silakan tunggu persetujuan admin."
+		} else if peserta.StatusPKL == "ditolak" {
+			msg = "Pendaftaran Anda ditolak. Anda tidak diperkenankan melakukan absensi."
+		}
+		utils.JSONError(c, http.StatusForbidden, msg, nil)
 		return
 	}
 

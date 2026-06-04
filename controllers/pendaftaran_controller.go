@@ -34,17 +34,31 @@ func CreatePendaftaran(c *gin.Context) {
 		return
 	}
 
-	filePath, err := utils.SaveUploadedFile(c, "file_surat", "pendaftaran", utils.AllowedPDFExt(), utils.MaxPDFSize)
+	fileSuratPath, err := utils.SaveUploadedFile(c, "file_surat", "pendaftaran", utils.AllowedDocExt(), utils.MaxPDFSize)
 	if err != nil {
-		utils.JSONError(c, http.StatusBadRequest, err.Error(), nil)
+		utils.JSONError(c, http.StatusBadRequest, "Surat pengantar: "+err.Error(), nil)
+		return
+	}
+
+	fileCVPath, err := utils.SaveUploadedFile(c, "file_cv", "pendaftaran", utils.AllowedDocExt(), utils.MaxPDFSize)
+	if err != nil {
+		utils.JSONError(c, http.StatusBadRequest, "CV: "+err.Error(), nil)
+		return
+	}
+
+	fileLamaranPath, err := utils.SaveUploadedFile(c, "file_surat_lamaran", "pendaftaran", utils.AllowedDocExt(), utils.MaxPDFSize)
+	if err != nil {
+		utils.JSONError(c, http.StatusBadRequest, "Surat lamaran: "+err.Error(), nil)
 		return
 	}
 
 	p := models.Pendaftaran{
-		IDUser:        claims.IDUser,
-		FileSurat:     filePath,
-		Status:        "pending",
-		TanggalDaftar: utils.TodayDate(),
+		IDUser:           claims.IDUser,
+		FileSurat:        fileSuratPath,
+		FileCV:           fileCVPath,
+		FileSuratLamaran: fileLamaranPath,
+		Status:           "pending",
+		TanggalDaftar:    utils.TodayDate(),
 	}
 
 	if err := config.DB.Create(&p).Error; err != nil {

@@ -62,6 +62,8 @@ CREATE TABLE `pendaftaran` (
   `id_pendaftaran` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `file_surat` varchar(255) NOT NULL,
+  `file_cv` varchar(255) NOT NULL,
+  `file_surat_lamaran` varchar(255) NOT NULL,
   `status` enum('pending','diterima','ditolak') DEFAULT 'pending',
   `tanggal_daftar` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
