@@ -20,7 +20,7 @@ type pesertaBody struct {
 	AsalInstansi string  `json:"asal_instansi" binding:"required,max=150"`
 	Jurusan      string  `json:"jurusan" binding:"required,max=100"`
 	NoHP         *string `json:"no_hp" binding:"omitempty,max=20"`
-	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak"`
+	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak selesai"`
 }
 
 func ListPeserta(c *gin.Context) {
@@ -177,7 +177,7 @@ type pesertaUpdateBody struct {
 	AsalInstansi string  `json:"asal_instansi" binding:"omitempty,max=150"`
 	Jurusan      string  `json:"jurusan" binding:"omitempty,max=100"`
 	NoHP         *string `json:"no_hp" binding:"omitempty,max=20"`
-	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak"`
+	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak selesai"`
 }
 
 func parseIDParam(c *gin.Context, key string) (uint, error) {

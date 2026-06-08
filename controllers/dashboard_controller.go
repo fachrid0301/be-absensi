@@ -11,10 +11,11 @@ import (
 )
 
 type dashboardData struct {
-	TotalPeserta         int64 `json:"total_peserta"`
-	HadirHariIni         int64 `json:"hadir_hari_ini"`
-	TelatHariIni         int64 `json:"telat_hari_ini"`
-	PendingPendaftaran   int64 `json:"pending_pendaftaran"`
+	TotalPeserta           int64 `json:"total_peserta"`
+	HadirHariIni           int64 `json:"hadir_hari_ini"`
+	TelatHariIni           int64 `json:"telat_hari_ini"`
+	PendingPendaftaran     int64 `json:"pending_pendaftaran"`
+	PendingSertifikat      int64 `json:"pending_sertifikat"`
 }
 
 func AdminDashboard(c *gin.Context) {
@@ -38,10 +39,16 @@ func AdminDashboard(c *gin.Context) {
 		Where("status = ?", "pending").
 		Count(&pendingPendaftaran)
 
+	var pendingSertifikat int64
+	config.DB.Model(&models.Sertifikat{}).
+		Where("status = ?", "pending").
+		Count(&pendingSertifikat)
+
 	utils.JSONSuccess(c, http.StatusOK, "dashboard admin", dashboardData{
-		TotalPeserta:       totalPeserta,
-		HadirHariIni:       hadirHariIni,
-		TelatHariIni:       telatHariIni,
-		PendingPendaftaran: pendingPendaftaran,
+		TotalPeserta:         totalPeserta,
+		HadirHariIni:         hadirHariIni,
+		TelatHariIni:         telatHariIni,
+		PendingPendaftaran:   pendingPendaftaran,
+		PendingSertifikat:    pendingSertifikat,
 	})
 }

@@ -48,5 +48,13 @@ func Register(r *gin.Engine) {
 			pendaftaran.GET("", controllers.ListPendaftaran)
 			pendaftaran.PUT("/:id/verifikasi", middleware.AdminOnly(), controllers.VerifikasiPendaftaran)
 		}
+
+		sertifikat := auth.Group("/sertifikat")
+		{
+			sertifikat.POST("/request", middleware.PesertaOnly(), controllers.RequestSertifikat)
+			sertifikat.GET("", controllers.ListSertifikat)
+			sertifikat.GET("/:id", controllers.GetSertifikat)
+			sertifikat.POST("/:id/verifikasi", middleware.AdminOnly(), controllers.VerifikasiSertifikat)
+		}
 	}
 }

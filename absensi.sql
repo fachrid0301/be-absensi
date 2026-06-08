@@ -81,8 +81,25 @@ CREATE TABLE `peserta` (
   `asal_instansi` varchar(150) NOT NULL,
   `jurusan` varchar(100) NOT NULL,
   `no_hp` varchar(20) DEFAULT NULL,
-  `status_pkl` enum('pending','diterima','ditolak') DEFAULT 'pending',
+  `status_pkl` enum('pending','diterima','ditolak','selesai') DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sertifikat`
+--
+
+CREATE TABLE `sertifikat` (
+  `id_sertifikat` int(11) NOT NULL,
+  `id_peserta` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `status` enum('pending','diberikan','ditolak') DEFAULT 'pending',
+  `file_sertifikat` varchar(255) DEFAULT NULL,
+  `catatan` text DEFAULT NULL,
+  `tanggal_request` date NOT NULL,
+  `tanggal_diberikan` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -133,6 +150,14 @@ ALTER TABLE `peserta`
   ADD KEY `fk_peserta_user` (`id_user`);
 
 --
+-- Indexes for table `sertifikat`
+--
+ALTER TABLE `sertifikat`
+  ADD PRIMARY KEY (`id_sertifikat`),
+  ADD KEY `fk_sertifikat_peserta` (`id_peserta`),
+  ADD KEY `fk_sertifikat_user` (`id_user`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -168,6 +193,12 @@ ALTER TABLE `peserta`
   MODIFY `id_peserta` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `sertifikat`
+--
+ALTER TABLE `sertifikat`
+  MODIFY `id_sertifikat` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -200,6 +231,13 @@ ALTER TABLE `pendaftaran`
 --
 ALTER TABLE `peserta`
   ADD CONSTRAINT `fk_peserta_user` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `sertifikat`
+--
+ALTER TABLE `sertifikat`
+  ADD CONSTRAINT `fk_sertifikat_peserta` FOREIGN KEY (`id_peserta`) REFERENCES `peserta` (`id_peserta`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_sertifikat_user` FOREIGN KEY (`id_user`) REFERENCES `users` (`id_user`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

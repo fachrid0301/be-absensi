@@ -9,7 +9,7 @@ type Peserta struct {
 	AsalInstansi string    `gorm:"column:asal_instansi;size:150;not null" json:"asal_instansi"`
 	Jurusan      string    `gorm:"column:jurusan;size:100;not null" json:"jurusan"`
 	NoHP         *string   `gorm:"column:no_hp;size:20" json:"no_hp,omitempty"`
-	StatusPKL    string    `gorm:"column:status_pkl;type:enum('pending','diterima','ditolak');default:pending" json:"status_pkl"`
+	StatusPKL    string    `gorm:"column:status_pkl;type:enum('pending','diterima','ditolak','selesai');default:pending" json:"status_pkl"`
 	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	User         *User     `gorm:"foreignKey:IDUser;references:IDUser" json:"user,omitempty"`
 }

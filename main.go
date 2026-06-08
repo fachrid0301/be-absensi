@@ -56,8 +56,8 @@ func main() {
 	}
 
 	config.ConnectDatabase()
-	if err := config.DB.AutoMigrate(&models.Pendaftaran{}); err != nil {
-		log.Printf("gagal auto migrate pendaftaran: %v", err)
+	if err := config.DB.AutoMigrate(&models.Pendaftaran{}, &models.Sertifikat{}); err != nil {
+		log.Printf("gagal auto migrate: %v", err)
 	}
 	utils.InitJWT()
 	utils.InitUploadDir()

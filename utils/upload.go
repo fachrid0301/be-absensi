@@ -15,7 +15,7 @@ import (
 var UploadBaseDir = "uploads"
 
 func InitUploadDir() {
-	for _, sub := range []string{"absensi", "pendaftaran"} {
+	for _, sub := range []string{"absensi", "pendaftaran", "sertifikat"} {
 		_ = os.MkdirAll(filepath.Join(UploadBaseDir, sub), 0o755)
 	}
 }
