@@ -31,10 +31,6 @@ func RequestSertifikat(c *gin.Context) {
 		return
 	}
 
-	if peserta.StatusPKL != "selesai" {
-		utils.JSONError(c, http.StatusForbidden, "sertifikat hanya bisa diminta setelah PKL selesai", nil)
-		return
-	}
 
 	var pending int64
 	config.DB.Model(&models.Sertifikat{}).
