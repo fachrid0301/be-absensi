@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"be-absensi/utils"
 )
 
 type Absensi struct {
@@ -24,6 +22,15 @@ func (Absensi) TableName() string {
 	return "absensi"
 }
 
-func (a *Absensi) FillKeterangan() {
-	a.Keterangan = utils.KeteranganStatus(a.Status)
+func (a *Absensi) FillKeterangan(jamMasuk string) {
+	if jamMasuk == "" {
+		jamMasuk = "08:00"
+	}
+	if a.Status == "telat" {
+		a.Keterangan = "Terlambat — absen masuk melewati jam " + jamMasuk
+	} else if a.Status == "hadir" {
+		a.Keterangan = "Hadir tepat waktu — absen masuk pada atau sebelum jam " + jamMasuk
+	} else if a.Status == "tidak hadir" {
+		a.Keterangan = "Tidak hadir / Alpha"
+	}
 }

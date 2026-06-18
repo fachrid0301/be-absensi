@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -77,9 +78,28 @@ func AbsensiMasuk(c *gin.Context) {
 		return
 	}
 
+	var jadwal models.Jadwal
+	if err := config.DB.First(&jadwal).Error; err != nil {
+		jadwal.JamMasuk = "08:00"
+		jadwal.JamPulang = "17:00"
+	}
+
 	now := time.Now()
 	jam := now.Format("15:04:05")
-	status := utils.AttendanceStatus(now)
+
+	status := "hadir"
+	var hour, minute int
+	_, errScan := fmt.Sscanf(jadwal.JamMasuk, "%d:%d", &hour, &minute)
+	if errScan == nil {
+		deadline := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
+		if now.After(deadline) {
+			status = "telat"
+		}
+	} else {
+		if now.Hour() > 8 || (now.Hour() == 8 && now.Minute() > 0) {
+			status = "telat"
+		}
+	}
 
 	abs := models.Absensi{
 		IDPeserta: peserta.IDPeserta,
@@ -95,7 +115,7 @@ func AbsensiMasuk(c *gin.Context) {
 		return
 	}
 
-	abs.FillKeterangan()
+	abs.FillKeterangan(jadwal.JamMasuk)
 	utils.JSONSuccess(c, http.StatusCreated, "absensi masuk berhasil", abs)
 }
 
@@ -148,7 +168,28 @@ func AbsensiPulang(c *gin.Context) {
 		abs.Lokasi = &lokasi
 	}
 
+	var jadwal models.Jadwal
+	if err := config.DB.First(&jadwal).Error; err != nil {
+		jadwal.JamMasuk = "08:00"
+		jadwal.JamPulang = "17:00"
+	}
+
 	now := time.Now()
+	var pHour, pMinute int
+	_, errScan := fmt.Sscanf(jadwal.JamPulang, "%d:%d", &pHour, &pMinute)
+	if errScan == nil {
+		pulangTime := time.Date(now.Year(), now.Month(), now.Day(), pHour, pMinute, 0, 0, now.Location())
+		if now.Before(pulangTime) {
+			utils.JSONError(c, http.StatusBadRequest, "belum memasuki jam pulang ("+jadwal.JamPulang+")", nil)
+			return
+		}
+	} else {
+		if now.Hour() < 17 {
+			utils.JSONError(c, http.StatusBadRequest, "belum memasuki jam pulang (17:00)", nil)
+			return
+		}
+	}
+
 	jam := now.Format("15:04:05")
 	abs.JamPulang = &jam
 
@@ -200,8 +241,12 @@ func AbsensiHistory(c *gin.Context) {
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat riwayat absensi", nil)
 		return
 	}
+	var jadwal models.Jadwal
+	if err := config.DB.First(&jadwal).Error; err != nil {
+		jadwal.JamMasuk = "08:00"
+	}
 	for i := range list {
-		list[i].FillKeterangan()
+		list[i].FillKeterangan(jadwal.JamMasuk)
 	}
 	utils.JSONSuccess(c, http.StatusOK, "riwayat absensi", list)
 }

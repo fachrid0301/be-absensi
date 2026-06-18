@@ -19,6 +19,7 @@ func Register(r *gin.Engine) {
 	auth.Use(middleware.JWTAuth())
 	{
 		auth.GET("/profile", controllers.Profile)
+		auth.GET("/jadwal", controllers.GetJadwal)
 
 		peserta := auth.Group("/peserta")
 		{
@@ -40,6 +41,7 @@ func Register(r *gin.Engine) {
 		admin.Use(middleware.AdminOnly())
 		{
 			admin.GET("/dashboard", controllers.AdminDashboard)
+			admin.PUT("/jadwal", controllers.UpdateJadwal)
 		}
 
 		pendaftaran := auth.Group("/pendaftaran")

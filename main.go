@@ -56,8 +56,22 @@ func main() {
 	}
 
 	config.ConnectDatabase()
-	if err := config.DB.AutoMigrate(&models.Pendaftaran{}, &models.Sertifikat{}); err != nil {
+	if err := config.DB.AutoMigrate(&models.Jadwal{}); err != nil {
 		log.Printf("gagal auto migrate: %v", err)
+	}
+	// Seed default jadwal jika belum ada
+	var count int64
+	if err := config.DB.Model(&models.Jadwal{}).Count(&count).Error; err == nil && count == 0 {
+		defaultJadwal := models.Jadwal{
+			ID:        1,
+			JamMasuk:  "08:00",
+			JamPulang: "17:00",
+		}
+		if err := config.DB.Create(&defaultJadwal).Error; err != nil {
+			log.Printf("gagal seed default jadwal: %v", err)
+		} else {
+			log.Println("default jadwal seeded")
+		}
 	}
 	utils.InitJWT()
 	utils.InitUploadDir()
