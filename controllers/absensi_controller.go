@@ -87,25 +87,30 @@ func AbsensiMasuk(c *gin.Context) {
 	now := time.Now()
 	jam := now.Format("15:04:05")
 
-	status := "hadir"
+	isLate := false
 	var hour, minute int
 	_, errScan := fmt.Sscanf(jadwal.JamMasuk, "%d:%d", &hour, &minute)
 	if errScan == nil {
 		deadline := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
 		if now.After(deadline) {
-			status = "telat"
+			isLate = true
 		}
 	} else {
 		if now.Hour() > 8 || (now.Hour() == 8 && now.Minute() > 0) {
-			status = "telat"
+			isLate = true
 		}
+	}
+
+	if isLate {
+		utils.JSONError(c, http.StatusBadRequest, "batas waktu absensi masuk telah lewat ("+jadwal.JamMasuk+")", nil)
+		return
 	}
 
 	abs := models.Absensi{
 		IDPeserta: peserta.IDPeserta,
 		Tanggal:   today,
 		JamMasuk:  &jam,
-		Status:    status,
+		Status:    "hadir",
 		Foto:      &fotoPath,
 		Lokasi:    &lokasi,
 	}
