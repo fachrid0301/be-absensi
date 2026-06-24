@@ -303,3 +303,58 @@ func AbsensiHistory(c *gin.Context) {
 	}
 	utils.JSONSuccess(c, http.StatusOK, "riwayat absensi", list)
 }
+
+type absensiStatusBody struct {
+	Status string `json:"status" binding:"required"`
+}
+
+// UpdateAbsensiStatus admin ubah status absensi: hadir, telat, atau tidak hadir.
+func UpdateAbsensiStatus(c *gin.Context) {
+	id, err := parseIDParam(c, "id")
+	if err != nil {
+		utils.JSONError(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	var body absensiStatusBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.JSONValidationError(c, formatBindError(err))
+		return
+	}
+
+	switch body.Status {
+	case "hadir", "telat", "tidak hadir":
+	default:
+		utils.JSONError(c, http.StatusBadRequest, "status harus hadir, telat, atau tidak hadir", nil)
+		return
+	}
+
+	var abs models.Absensi
+	if err := config.DB.First(&abs, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.JSONError(c, http.StatusNotFound, "absensi tidak ditemukan", nil)
+			return
+		}
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat absensi", nil)
+		return
+	}
+
+	abs.Status = body.Status
+	if body.Status == "tidak hadir" {
+		abs.JamMasuk = nil
+		abs.JamPulang = nil
+	}
+
+	if err := config.DB.Save(&abs).Error; err != nil {
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memperbarui status absensi", nil)
+		return
+	}
+
+	var jadwal models.Jadwal
+	if err := config.DB.First(&jadwal).Error; err != nil {
+		jadwal.JamMasuk = "08:00"
+	}
+	_ = config.DB.Preload("Peserta").Preload("Peserta.User").First(&abs, abs.IDAbsensi)
+	abs.FillKeterangan(jadwal.JamMasuk)
+	utils.JSONSuccess(c, http.StatusOK, "status absensi berhasil diperbarui", abs)
+}

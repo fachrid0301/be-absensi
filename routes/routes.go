@@ -35,6 +35,7 @@ func Register(r *gin.Engine) {
 			absensi.POST("/masuk", middleware.PesertaOnly(), controllers.AbsensiMasuk)
 			absensi.POST("/pulang", middleware.PesertaOnly(), controllers.AbsensiPulang)
 			absensi.GET("/history", controllers.AbsensiHistory)
+			absensi.PUT("/:id/status", middleware.AdminOnly(), controllers.UpdateAbsensiStatus)
 		}
 
 		admin := auth.Group("/admin")
