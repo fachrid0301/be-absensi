@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// RequestSertifikat peserta ajukan sertifikat; max 1 pending, tidak boleh duplikat.
 func RequestSertifikat(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -73,6 +74,7 @@ func RequestSertifikat(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusCreated, "permintaan sertifikat berhasil dikirim", s)
 }
 
+// ListSertifikat daftar permintaan; peserta lihat milik sendiri, admin lihat semua.
 func ListSertifikat(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -96,6 +98,7 @@ func ListSertifikat(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "daftar permintaan sertifikat", list)
 }
 
+// GetSertifikat detail permintaan sertifikat by ID.
 func GetSertifikat(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -125,6 +128,7 @@ func GetSertifikat(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "detail permintaan sertifikat", s)
 }
 
+// VerifikasiSertifikat admin setujui (upload file) atau tolak permintaan sertifikat.
 func VerifikasiSertifikat(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {

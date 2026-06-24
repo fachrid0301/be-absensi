@@ -28,6 +28,7 @@ type loginBody struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Register buat akun peserta baru (user + data peserta) dalam satu transaksi.
 func Register(c *gin.Context) {
 	var body registerBody
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -91,6 +92,7 @@ func Register(c *gin.Context) {
 	})
 }
 
+// Login cek email/password, kembalikan JWT token jika valid.
 func Login(c *gin.Context) {
 	var body loginBody
 	if err := c.ShouldBindJSON(&body); err != nil {

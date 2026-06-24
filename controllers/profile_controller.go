@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Profile kembalikan info user dari JWT (id, nama, role).
 func Profile(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {

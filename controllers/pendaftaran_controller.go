@@ -18,6 +18,7 @@ type verifikasiBody struct {
 	Status string `json:"status" binding:"required,oneof=diterima ditolak"`
 }
 
+// CreatePendaftaran peserta ajukan PKL + upload 3 dokumen; max 1 pending per user.
 func CreatePendaftaran(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -69,6 +70,7 @@ func CreatePendaftaran(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusCreated, "pendaftaran berhasil dikirim", p)
 }
 
+// ListPendaftaran daftar pendaftaran; peserta lihat milik sendiri, admin lihat semua.
 func ListPendaftaran(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -92,6 +94,7 @@ func ListPendaftaran(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "daftar pendaftaran", list)
 }
 
+// VerifikasiPendaftaran admin terima/tolak pendaftaran pending; sinkron ke status_pkl peserta.
 func VerifikasiPendaftaran(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {
@@ -126,7 +129,6 @@ func VerifikasiPendaftaran(c *gin.Context) {
 		return
 	}
 
-	// Sinkronkan status_pkl pada tabel peserta jika sudah ada
 	var peserta models.Peserta
 	if err := config.DB.Where("id_user = ?", p.IDUser).First(&peserta).Error; err == nil {
 		peserta.StatusPKL = p.Status

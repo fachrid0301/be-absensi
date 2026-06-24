@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AdminOnly batasi endpoint hanya untuk role admin.
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := GetClaims(c)
@@ -26,6 +27,7 @@ func AdminOnly() gin.HandlerFunc {
 	}
 }
 
+// PesertaOnly batasi endpoint hanya untuk role peserta.
 func PesertaOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := GetClaims(c)

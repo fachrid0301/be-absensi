@@ -15,12 +15,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// findPesertaByUser ambil data peserta berdasarkan id_user.
 func findPesertaByUser(idUser uint) (*models.Peserta, error) {
 	var p models.Peserta
 	err := config.DB.Where("id_user = ?", idUser).First(&p).Error
 	return &p, err
 }
 
+// AbsensiMasuk catat kehadiran masuk: cek status PKL, jadwal, upload foto + lokasi.
 func AbsensiMasuk(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -124,6 +126,7 @@ func AbsensiMasuk(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusCreated, "absensi masuk berhasil", abs)
 }
 
+// AbsensiPulang catat pulang setelah absen masuk, sesuai jam pulang jadwal.
 func AbsensiPulang(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -206,6 +209,7 @@ func AbsensiPulang(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "absensi pulang berhasil", abs)
 }
 
+// AbsensiHistory riwayat absensi; peserta lihat milik sendiri, admin bisa filter.
 func AbsensiHistory(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {

@@ -14,12 +14,14 @@ import (
 
 var UploadBaseDir = "uploads"
 
+// InitUploadDir buat folder uploads/absensi, pendaftaran, sertifikat.
 func InitUploadDir() {
 	for _, sub := range []string{"absensi", "pendaftaran", "sertifikat"} {
 		_ = os.MkdirAll(filepath.Join(UploadBaseDir, sub), 0o755)
 	}
 }
 
+// UploadBasePath path root upload; dari env UPLOAD_PATH atau default "uploads".
 func UploadBasePath() string {
 	if p := os.Getenv("UPLOAD_PATH"); p != "" {
 		return p
@@ -27,6 +29,7 @@ func UploadBasePath() string {
 	return UploadBaseDir
 }
 
+// SaveUploadedFile validasi & simpan file upload; kembalikan path relatif.
 func SaveUploadedFile(c *gin.Context, field, subdir string, allowedExt map[string]bool, maxBytes int64) (string, error) {
 	file, err := c.FormFile(field)
 	if err != nil {
@@ -57,14 +60,17 @@ func SaveUploadedFile(c *gin.Context, field, subdir string, allowedExt map[strin
 	return filepath.ToSlash(filepath.Join(subdir, name)), nil
 }
 
+// AllowedImageExt ekstensi gambar yang diizinkan untuk upload.
 func AllowedImageExt() map[string]bool {
 	return map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
 }
 
+// AllowedPDFExt ekstensi PDF yang diizinkan.
 func AllowedPDFExt() map[string]bool {
 	return map[string]bool{".pdf": true}
 }
 
+// AllowedDocExt ekstensi dokumen (PDF + gambar) yang diizinkan.
 func AllowedDocExt() map[string]bool {
 	return map[string]bool{".pdf": true, ".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
 }
@@ -72,6 +78,7 @@ func AllowedDocExt() map[string]bool {
 const MaxImageSize = 5 * 1024 * 1024  // 5MB
 const MaxPDFSize = 10 * 1024 * 1024   // 10MB
 
+// OptionalFormFile ambil file form opsional; nil jika field tidak ada.
 func OptionalFormFile(c *gin.Context, field string) (*multipart.FileHeader, error) {
 	f, err := c.FormFile(field)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// formatBindError ubah error validasi menjadi pesan berbahasa Indonesia.
 func formatBindError(err error) []string {
 	var ve validator.ValidationErrors
 	if !errors.As(err, &ve) {
@@ -20,6 +21,7 @@ func formatBindError(err error) []string {
 	return out
 }
 
+// msgForTag terjemahkan tag validasi ke pesan error.
 func msgForTag(fe validator.FieldError) string {
 	switch fe.Tag() {
 	case "required":

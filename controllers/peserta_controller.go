@@ -23,6 +23,7 @@ type pesertaBody struct {
 	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak selesai"`
 }
 
+// ListPeserta tampilkan semua peserta beserta data user.
 func ListPeserta(c *gin.Context) {
 	var list []models.Peserta
 	q := config.DB.Preload("User")
@@ -33,6 +34,7 @@ func ListPeserta(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "daftar peserta", list)
 }
 
+// GetPeserta detail satu peserta by ID.
 func GetPeserta(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {
@@ -52,6 +54,7 @@ func GetPeserta(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "detail peserta", p)
 }
 
+// CreatePeserta tambah data peserta untuk user yang sudah ada.
 func CreatePeserta(c *gin.Context) {
 	var body pesertaBody
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -91,6 +94,7 @@ func CreatePeserta(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusCreated, "peserta berhasil ditambahkan", p)
 }
 
+// UpdatePeserta ubah data peserta; status_pkl disinkron ke tabel pendaftaran.
 func UpdatePeserta(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {
@@ -152,6 +156,7 @@ func UpdatePeserta(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "peserta berhasil diperbarui", p)
 }
 
+// DeletePeserta hapus peserta by ID.
 func DeletePeserta(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {
@@ -180,6 +185,7 @@ type pesertaUpdateBody struct {
 	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak selesai"`
 }
 
+// parseIDParam parse parameter URL :id menjadi uint.
 func parseIDParam(c *gin.Context, key string) (uint, error) {
 	raw := c.Param(key)
 	n, err := strconv.ParseUint(raw, 10, 64)

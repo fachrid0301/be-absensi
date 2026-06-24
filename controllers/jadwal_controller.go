@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetJadwal ambil jam masuk/pulang; default 08:00–17:00 jika belum diset.
 func GetJadwal(c *gin.Context) {
 	var j models.Jadwal
 	if err := config.DB.First(&j).Error; err != nil {
@@ -24,6 +25,7 @@ func GetJadwal(c *gin.Context) {
 	utils.JSONSuccess(c, http.StatusOK, "jadwal absensi berhasil dimuat", j)
 }
 
+// UpdateJadwal ubah jam masuk/pulang absensi (format HH:MM).
 func UpdateJadwal(c *gin.Context) {
 	var req struct {
 		JamMasuk  string `json:"jam_masuk"`

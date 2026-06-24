@@ -18,6 +18,7 @@ type dashboardData struct {
 	PendingSertifikat      int64 `json:"pending_sertifikat"`
 }
 
+// AdminDashboard ringkasan statistik: peserta, kehadiran hari ini, antrian verifikasi.
 func AdminDashboard(c *gin.Context) {
 	today := utils.TodayDate().Format("2006-01-02")
 

@@ -9,8 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const ContextUserKey = "auth_user"
+const ContextUserKey = "auth_user" // key untuk simpan JWT claims di gin.Context
 
+// JWTAuth validasi header Bearer token, simpan claims ke context jika valid.
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Authorization")

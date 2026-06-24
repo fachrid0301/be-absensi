@@ -18,6 +18,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// InitJWT baca JWT_SECRET dari env (wajib saat startup).
 func InitJWT() {
 	s := os.Getenv("JWT_SECRET")
 	if s == "" {
@@ -38,6 +39,7 @@ func expireDuration() time.Duration {
 	return time.Duration(n) * time.Hour
 }
 
+// GenerateToken buat JWT berisi id_user, nama, role.
 func GenerateToken(idUser uint, nama, role string) (string, error) {
 	claims := Claims{
 		IDUser: idUser,
@@ -52,6 +54,7 @@ func GenerateToken(idUser uint, nama, role string) (string, error) {
 	return t.SignedString(jwtSecret)
 }
 
+// ParseToken decode & validasi JWT, kembalikan claims jika valid.
 func ParseToken(tokenString string) (*Claims, error) {
 	t, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
