@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"be-absensi/config"
+	"be-absensi/controllers"
 	"be-absensi/models"
 	"be-absensi/routes"
 	"be-absensi/utils"
@@ -75,6 +76,20 @@ func main() {
 	}
 	utils.InitJWT()
 	utils.InitUploadDir()
+
+	// Jalankan scheduler otomatis "tidak hadir"
+	// Setiap menit dicek apakah jam pulang sudah lewat;
+	// jika iya, peserta yang belum absen hari ini ditandai "tidak hadir".
+	utils.RunAbsenceScheduler(
+		controllers.MarkAbsentPeserta,
+		func() (string, string, error) {
+			var jadwal models.Jadwal
+			if err := config.DB.First(&jadwal).Error; err != nil {
+				return "08:00", "17:00", err
+			}
+			return jadwal.JamMasuk, jadwal.JamPulang, nil
+		},
+	)
 
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)

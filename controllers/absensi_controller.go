@@ -15,6 +15,50 @@ import (
 	"gorm.io/gorm"
 )
 
+// MarkAbsentPeserta dipanggil oleh scheduler setelah jam pulang lewat.
+// Fungsi ini membuat record "tidak hadir" untuk setiap peserta aktif
+// yang belum memiliki catatan absensi pada tanggal yang diberikan.
+func MarkAbsentPeserta(tanggal time.Time, _ string) (int, error) {
+	// Ambil semua peserta dengan status diterima
+	var pesertaList []models.Peserta
+	if err := config.DB.Where("status_pkl = ?", "diterima").Find(&pesertaList).Error; err != nil {
+		return 0, err
+	}
+
+	count := 0
+	status := "tidak hadir"
+
+	for _, p := range pesertaList {
+		// Cek apakah sudah ada absensi hari ini
+		var existing models.Absensi
+		err := config.DB.
+			Where("id_peserta = ? AND tanggal = ?", p.IDPeserta, tanggal).
+			First(&existing).Error
+
+		if err == nil {
+			// Sudah absen, lewati
+			continue
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			// Error lain, lewati peserta ini
+			continue
+		}
+
+		// Buat record tidak hadir
+		abs := models.Absensi{
+			IDPeserta: p.IDPeserta,
+			Tanggal:   tanggal,
+			Status:    status,
+		}
+		if createErr := config.DB.Create(&abs).Error; createErr != nil {
+			continue
+		}
+		count++
+	}
+
+	return count, nil
+}
+
 // findPesertaByUser ambil data peserta berdasarkan id_user.
 func findPesertaByUser(idUser uint) (*models.Peserta, error) {
 	var p models.Peserta
