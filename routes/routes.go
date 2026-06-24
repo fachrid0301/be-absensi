@@ -14,6 +14,7 @@ func Register(r *gin.Engine) {
 
 	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
+	r.GET("/peminatan", controllers.ListPeminatan)
 
 	auth := r.Group("")
 	auth.Use(middleware.JWTAuth())

@@ -18,6 +18,11 @@ type verifikasiBody struct {
 	Status string `json:"status" binding:"required,oneof=diterima ditolak"`
 }
 
+// ListPeminatan daftar pilihan peminatan (dari konstanta, untuk form pendaftaran).
+func ListPeminatan(c *gin.Context) {
+	utils.JSONSuccess(c, http.StatusOK, "daftar peminatan", models.PeminatanOptions)
+}
+
 // CreatePendaftaran peserta ajukan PKL + upload 3 dokumen; max 1 pending per user.
 func CreatePendaftaran(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
@@ -32,6 +37,12 @@ func CreatePendaftaran(c *gin.Context) {
 		Count(&pending)
 	if pending > 0 {
 		utils.JSONError(c, http.StatusConflict, "anda masih memiliki pendaftaran pending", nil)
+		return
+	}
+
+	peminatan := strings.TrimSpace(c.PostForm("peminatan"))
+	if peminatan == "" || !models.ValidPeminatan(peminatan) {
+		utils.JSONError(c, http.StatusBadRequest, "peminatan wajib dipilih dan harus valid", nil)
 		return
 	}
 
@@ -55,6 +66,7 @@ func CreatePendaftaran(c *gin.Context) {
 
 	p := models.Pendaftaran{
 		IDUser:           claims.IDUser,
+		Peminatan:        peminatan,
 		FileSurat:        fileSuratPath,
 		FileCV:           fileCVPath,
 		FileSuratLamaran: fileLamaranPath,
@@ -132,6 +144,10 @@ func VerifikasiPendaftaran(c *gin.Context) {
 	var peserta models.Peserta
 	if err := config.DB.Where("id_user = ?", p.IDUser).First(&peserta).Error; err == nil {
 		peserta.StatusPKL = p.Status
+		if p.Status == "diterima" {
+			peminatan := p.Peminatan
+			peserta.Peminatan = &peminatan
+		}
 		_ = config.DB.Save(&peserta)
 	}
 

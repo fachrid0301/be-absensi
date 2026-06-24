@@ -57,7 +57,11 @@ func main() {
 	}
 
 	config.ConnectDatabase()
-	if err := config.DB.AutoMigrate(&models.Jadwal{}); err != nil {
+	if err := config.DB.AutoMigrate(
+		&models.Jadwal{},
+		&models.Peserta{},
+		&models.Pendaftaran{},
+	); err != nil {
 		log.Printf("gagal auto migrate: %v", err)
 	}
 	// Seed default jadwal jika belum ada

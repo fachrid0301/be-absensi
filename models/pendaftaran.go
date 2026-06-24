@@ -5,6 +5,7 @@ import "time"
 type Pendaftaran struct {
 	IDPendaftaran    uint      `gorm:"column:id_pendaftaran;primaryKey;autoIncrement" json:"id_pendaftaran"`
 	IDUser           uint      `gorm:"column:id_user;not null" json:"id_user"`
+	Peminatan        string    `gorm:"column:peminatan;type:enum('Pengembangan Web','Pengembangan Mobile','Jaringan & Infrastruktur','Data & AI','Keamanan Siber');not null" json:"peminatan"`
 	FileSurat        string    `gorm:"column:file_surat;size:255;not null" json:"file_surat"`
 	FileCV           string    `gorm:"column:file_cv;size:255;not null" json:"file_cv"`
 	FileSuratLamaran string    `gorm:"column:file_surat_lamaran;size:255;not null" json:"file_surat_lamaran"`

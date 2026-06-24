@@ -61,6 +61,7 @@ CREATE TABLE `log_aktivitas` (
 CREATE TABLE `pendaftaran` (
   `id_pendaftaran` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
+  `peminatan` enum('Pengembangan Web','Pengembangan Mobile','Jaringan & Infrastruktur','Data & AI','Keamanan Siber') NOT NULL,
   `file_surat` varchar(255) NOT NULL,
   `file_cv` varchar(255) NOT NULL,
   `file_surat_lamaran` varchar(255) NOT NULL,
@@ -80,6 +81,7 @@ CREATE TABLE `peserta` (
   `nim_nis` varchar(50) NOT NULL,
   `asal_instansi` varchar(150) NOT NULL,
   `jurusan` varchar(100) NOT NULL,
+  `peminatan` enum('Pengembangan Web','Pengembangan Mobile','Jaringan & Infrastruktur','Data & AI','Keamanan Siber') DEFAULT NULL,
   `no_hp` varchar(20) DEFAULT NULL,
   `status_pkl` enum('pending','diterima','ditolak','selesai') DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()

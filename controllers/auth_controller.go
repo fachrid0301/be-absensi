@@ -24,7 +24,7 @@ type registerBody struct {
 }
 
 type loginBody struct {
-	Email    string `json:"email" binding:"required,email"`
+	NimNis   string `json:"nim_nis" binding:"required,max=50"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -92,7 +92,7 @@ func Register(c *gin.Context) {
 	})
 }
 
-// Login cek email/password, kembalikan JWT token jika valid.
+// Login cek nim_nis/password, kembalikan JWT token jika valid.
 func Login(c *gin.Context) {
 	var body loginBody
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -100,12 +100,22 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	body.Email = strings.TrimSpace(strings.ToLower(body.Email))
+	body.NimNis = strings.TrimSpace(body.NimNis)
+
+	var peserta models.Peserta
+	if err := config.DB.Where("nim_nis = ?", body.NimNis).First(&peserta).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
+			return
+		}
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat peserta", nil)
+		return
+	}
 
 	var u models.User
-	if err := config.DB.Where("email = ?", body.Email).First(&u).Error; err != nil {
+	if err := config.DB.First(&u, peserta.IDUser).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONError(c, http.StatusUnauthorized, "email atau password salah", nil)
+			utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
 			return
 		}
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat pengguna", nil)
@@ -113,7 +123,7 @@ func Login(c *gin.Context) {
 	}
 
 	if err := utils.ComparePassword(u.Password, body.Password); err != nil {
-		utils.JSONError(c, http.StatusUnauthorized, "email atau password salah", nil)
+		utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
 		return
 	}
 
