@@ -18,9 +18,9 @@ type verifikasiBody struct {
 	Status string `json:"status" binding:"required,oneof=diterima ditolak"`
 }
 
-// ListPeminatan daftar pilihan peminatan (dari konstanta, untuk form pendaftaran).
-func ListPeminatan(c *gin.Context) {
-	utils.JSONSuccess(c, http.StatusOK, "daftar peminatan", models.PeminatanOptions)
+// ListDivisi daftar pilihan divisi (dari konstanta, untuk form pendaftaran).
+func ListDivisi(c *gin.Context) {
+	utils.JSONSuccess(c, http.StatusOK, "daftar divisi", models.DivisiOptions)
 }
 
 // CreatePendaftaran peserta ajukan PKL + upload 3 dokumen; max 1 pending per user.
@@ -40,9 +40,9 @@ func CreatePendaftaran(c *gin.Context) {
 		return
 	}
 
-	peminatan := strings.TrimSpace(c.PostForm("peminatan"))
-	if peminatan == "" || !models.ValidPeminatan(peminatan) {
-		utils.JSONError(c, http.StatusBadRequest, "peminatan wajib dipilih dan harus valid", nil)
+	divisi := strings.TrimSpace(c.PostForm("divisi"))
+	if divisi == "" || !models.ValidDivisi(divisi) {
+		utils.JSONError(c, http.StatusBadRequest, "divisi wajib dipilih dan harus valid", nil)
 		return
 	}
 
@@ -66,7 +66,7 @@ func CreatePendaftaran(c *gin.Context) {
 
 	p := models.Pendaftaran{
 		IDUser:           claims.IDUser,
-		Peminatan:        peminatan,
+		Divisi:           divisi,
 		FileSurat:        fileSuratPath,
 		FileCV:           fileCVPath,
 		FileSuratLamaran: fileLamaranPath,
@@ -145,8 +145,8 @@ func VerifikasiPendaftaran(c *gin.Context) {
 	if err := config.DB.Where("id_user = ?", p.IDUser).First(&peserta).Error; err == nil {
 		peserta.StatusPKL = p.Status
 		if p.Status == "diterima" {
-			peminatan := p.Peminatan
-			peserta.Peminatan = &peminatan
+			divisi := p.Divisi
+			peserta.Divisi = &divisi
 		}
 		_ = config.DB.Save(&peserta)
 	}

@@ -31,10 +31,10 @@ func Profile(c *gin.Context) {
 	err := config.DB.Where("id_user = ?", claims.IDUser).First(&peserta).Error
 	if err == nil {
 		data["nim_nis"] = peserta.NimNis
-		if peserta.Peminatan != nil {
-			data["peminatan"] = *peserta.Peminatan
+		if peserta.Divisi != nil {
+			data["divisi"] = *peserta.Divisi
 		} else {
-			data["peminatan"] = nil
+			data["divisi"] = nil
 		}
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat profil", nil)

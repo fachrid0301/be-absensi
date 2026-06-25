@@ -102,23 +102,32 @@ func Login(c *gin.Context) {
 
 	body.NimNis = strings.TrimSpace(body.NimNis)
 
-	var peserta models.Peserta
-	if err := config.DB.Where("nim_nis = ?", body.NimNis).First(&peserta).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
-			return
-		}
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat peserta", nil)
-		return
-	}
-
 	var u models.User
-	if err := config.DB.First(&u, peserta.IDUser).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
+	var peserta models.Peserta
+	var err error
+
+	err = config.DB.Where("nim_nis = ?", body.NimNis).First(&peserta).Error
+	if err == nil {
+		if err = config.DB.First(&u, peserta.IDUser).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
+				return
+			}
+			utils.JSONError(c, http.StatusInternalServerError, "gagal memuat pengguna", nil)
 			return
 		}
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat pengguna", nil)
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		// Fallback for Admin (whose email will be entered in the NIM/NIS field)
+		if err = config.DB.Where("email = ?", body.NimNis).First(&u).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				utils.JSONError(c, http.StatusUnauthorized, "nim/nis atau password salah", nil)
+				return
+			}
+			utils.JSONError(c, http.StatusInternalServerError, "gagal memuat pengguna", nil)
+			return
+		}
+	} else {
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat peserta", nil)
 		return
 	}
 
