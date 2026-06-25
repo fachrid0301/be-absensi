@@ -61,6 +61,7 @@ func main() {
 		&models.Jadwal{},
 		&models.Peserta{},
 		&models.Pendaftaran{},
+		&models.Sertifikat{},
 	); err != nil {
 		log.Printf("gagal auto migrate: %v", err)
 	}

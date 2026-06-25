@@ -60,6 +60,47 @@ func SaveUploadedFile(c *gin.Context, field, subdir string, allowedExt map[strin
 	return filepath.ToSlash(filepath.Join(subdir, name)), nil
 }
 
+// SaveMultipartFileHeader simpan file dari multipart.FileHeader; kembalikan path relatif.
+func SaveMultipartFileHeader(fileHeader *multipart.FileHeader, subdir string) (string, error) {
+	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
+
+	base := UploadBasePath()
+	dir := filepath.Join(base, subdir)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", err
+	}
+
+	name := fmt.Sprintf("%s_%d%s", uuid.New().String()[:8], time.Now().Unix(), ext)
+	dest := filepath.Join(dir, name)
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return "", err
+	}
+	defer out.Close()
+
+	buf := make([]byte, 32*1024)
+	for {
+		n, readErr := src.Read(buf)
+		if n > 0 {
+			if _, writeErr := out.Write(buf[:n]); writeErr != nil {
+				return "", writeErr
+			}
+		}
+		if readErr != nil {
+			break
+		}
+	}
+
+	return filepath.ToSlash(filepath.Join(subdir, name)), nil
+}
+
 // AllowedImageExt ekstensi gambar yang diizinkan untuk upload.
 func AllowedImageExt() map[string]bool {
 	return map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
@@ -75,8 +116,8 @@ func AllowedDocExt() map[string]bool {
 	return map[string]bool{".pdf": true, ".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
 }
 
-const MaxImageSize = 5 * 1024 * 1024  // 5MB
-const MaxPDFSize = 10 * 1024 * 1024   // 10MB
+const MaxImageSize = 5 * 1024 * 1024 // 5MB
+const MaxPDFSize = 10 * 1024 * 1024  // 10MB
 
 // OptionalFormFile ambil file form opsional; nil jika field tidak ada.
 func OptionalFormFile(c *gin.Context, field string) (*multipart.FileHeader, error) {

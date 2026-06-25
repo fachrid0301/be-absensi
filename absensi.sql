@@ -99,6 +99,7 @@ CREATE TABLE `sertifikat` (
   `id_user` int(11) NOT NULL,
   `status` enum('pending','diberikan','ditolak') DEFAULT 'pending',
   `file_sertifikat` varchar(255) DEFAULT NULL,
+  `file_berkas` text DEFAULT NULL,
   `catatan` text DEFAULT NULL,
   `tanggal_request` date NOT NULL,
   `tanggal_diberikan` date DEFAULT NULL

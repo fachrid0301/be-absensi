@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// RequestSertifikat peserta ajukan sertifikat; max 1 pending, tidak boleh duplikat.
+// RequestSertifikat peserta ajukan berkas; max 1 pending, tidak boleh duplikat.
 func RequestSertifikat(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -32,13 +32,12 @@ func RequestSertifikat(c *gin.Context) {
 		return
 	}
 
-
 	var pending int64
 	config.DB.Model(&models.Sertifikat{}).
 		Where("id_peserta = ? AND status = ?", peserta.IDPeserta, "pending").
 		Count(&pending)
 	if pending > 0 {
-		utils.JSONError(c, http.StatusConflict, "anda masih memiliki permintaan sertifikat yang menunggu", nil)
+		utils.JSONError(c, http.StatusConflict, "anda masih memiliki permintaan berkas yang menunggu", nil)
 		return
 	}
 
@@ -47,7 +46,7 @@ func RequestSertifikat(c *gin.Context) {
 		Where("id_peserta = ? AND status = ?", peserta.IDPeserta, "diberikan").
 		Count(&sudahDiberikan)
 	if sudahDiberikan > 0 {
-		utils.JSONError(c, http.StatusConflict, "sertifikat sudah pernah diberikan", nil)
+		utils.JSONError(c, http.StatusConflict, "berkas sudah pernah diberikan", nil)
 		return
 	}
 
@@ -66,12 +65,12 @@ func RequestSertifikat(c *gin.Context) {
 	}
 
 	if err := config.DB.Create(&s).Error; err != nil {
-		utils.JSONError(c, http.StatusInternalServerError, "gagal mengirim permintaan sertifikat", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal mengirim permintaan berkas", nil)
 		return
 	}
 
 	_ = config.DB.Preload("Peserta").Preload("User").First(&s, s.IDSertifikat)
-	utils.JSONSuccess(c, http.StatusCreated, "permintaan sertifikat berhasil dikirim", s)
+	utils.JSONSuccess(c, http.StatusCreated, "permintaan berkas berhasil dikirim", s)
 }
 
 // ListSertifikat daftar permintaan; peserta lihat milik sendiri, admin lihat semua.
@@ -92,13 +91,13 @@ func ListSertifikat(c *gin.Context) {
 
 	var list []models.Sertifikat
 	if err := q.Find(&list).Error; err != nil {
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan sertifikat", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan berkas", nil)
 		return
 	}
-	utils.JSONSuccess(c, http.StatusOK, "daftar permintaan sertifikat", list)
+	utils.JSONSuccess(c, http.StatusOK, "daftar permintaan berkas", list)
 }
 
-// GetSertifikat detail permintaan sertifikat by ID.
+// GetSertifikat detail permintaan berkas by ID.
 func GetSertifikat(c *gin.Context) {
 	claims, ok := middleware.GetClaims(c)
 	if !ok {
@@ -119,16 +118,17 @@ func GetSertifikat(c *gin.Context) {
 	}
 	if err := q.First(&s, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONError(c, http.StatusNotFound, "permintaan sertifikat tidak ditemukan", nil)
+			utils.JSONError(c, http.StatusNotFound, "permintaan berkas tidak ditemukan", nil)
 			return
 		}
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan sertifikat", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan berkas", nil)
 		return
 	}
-	utils.JSONSuccess(c, http.StatusOK, "detail permintaan sertifikat", s)
+	utils.JSONSuccess(c, http.StatusOK, "detail permintaan berkas", s)
 }
 
-// VerifikasiSertifikat admin setujui (upload file) atau tolak permintaan sertifikat.
+// VerifikasiSertifikat admin setujui (upload file) atau tolak permintaan berkas.
+// Admin dapat mengupload lebih dari 1 file berkas (PDF).
 func VerifikasiSertifikat(c *gin.Context) {
 	id, err := parseIDParam(c, "id")
 	if err != nil {
@@ -145,10 +145,10 @@ func VerifikasiSertifikat(c *gin.Context) {
 	var s models.Sertifikat
 	if err := config.DB.First(&s, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONError(c, http.StatusNotFound, "permintaan sertifikat tidak ditemukan", nil)
+			utils.JSONError(c, http.StatusNotFound, "permintaan berkas tidak ditemukan", nil)
 			return
 		}
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan sertifikat", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat permintaan berkas", nil)
 		return
 	}
 
@@ -163,26 +163,65 @@ func VerifikasiSertifikat(c *gin.Context) {
 	}
 
 	if status == "diberikan" {
-		filePath, err := utils.SaveUploadedFile(c, "file_sertifikat", "sertifikat", utils.AllowedDocExt(), utils.MaxPDFSize)
+		// Ambil semua file berkas yang diupload (bisa lebih dari 1)
+		form, err := c.MultipartForm()
 		if err != nil {
-			utils.JSONError(c, http.StatusBadRequest, "File sertifikat: "+err.Error(), nil)
+			utils.JSONError(c, http.StatusBadRequest, "gagal memproses form data", nil)
 			return
 		}
-		s.FileSertifikat = &filePath
+
+		files := form.File["file_berkas"]
+		if len(files) == 0 {
+			// Fallback ke field lama file_sertifikat untuk kompatibilitas
+			files = form.File["file_sertifikat"]
+		}
+
+		if len(files) == 0 {
+			utils.JSONError(c, http.StatusBadRequest, "minimal 1 file berkas wajib diunggah", nil)
+			return
+		}
+
+		var berkasFiles models.StringSlice
+		for _, fileHeader := range files {
+			// Validasi setiap file
+			if fileHeader.Size > utils.MaxPDFSize {
+				utils.JSONError(c, http.StatusBadRequest, "ukuran file maksimal 10 MB per file", nil)
+				return
+			}
+			ext := strings.ToLower(fileHeader.Filename[strings.LastIndex(fileHeader.Filename, ".")+1:])
+			if ext != "pdf" {
+				utils.JSONError(c, http.StatusBadRequest, "hanya file PDF yang diizinkan", nil)
+				return
+			}
+
+			// Simpan file menggunakan SaveMultipartFile
+			filePath, saveErr := utils.SaveMultipartFileHeader(fileHeader, "sertifikat")
+			if saveErr != nil {
+				utils.JSONError(c, http.StatusInternalServerError, "gagal menyimpan file: "+saveErr.Error(), nil)
+				return
+			}
+			berkasFiles = append(berkasFiles, filePath)
+		}
+
+		s.FileBerkas = &berkasFiles
+		// Juga simpan file pertama ke FileSertifikat untuk kompatibilitas backward
+		if len(berkasFiles) > 0 {
+			s.FileSertifikat = &berkasFiles[0]
+		}
 		now := utils.TodayDate()
 		s.TanggalDiberikan = &now
 	}
 
 	s.Status = status
 	if err := config.DB.Save(&s).Error; err != nil {
-		utils.JSONError(c, http.StatusInternalServerError, "gagal memperbarui permintaan sertifikat", nil)
+		utils.JSONError(c, http.StatusInternalServerError, "gagal memperbarui permintaan berkas", nil)
 		return
 	}
 
 	_ = config.DB.Preload("Peserta").Preload("User").First(&s, s.IDSertifikat)
-	msg := "permintaan sertifikat ditolak"
+	msg := "permintaan berkas ditolak"
 	if status == "diberikan" {
-		msg = "sertifikat berhasil diberikan"
+		msg = "berkas berhasil diberikan"
 	}
 	utils.JSONSuccess(c, http.StatusOK, msg, s)
 }
