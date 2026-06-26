@@ -127,6 +127,15 @@ func UpdatePeserta(c *gin.Context) {
 	if body.Jurusan != "" {
 		p.Jurusan = strings.TrimSpace(body.Jurusan)
 	}
+	if body.Divisi != "" {
+		p.Divisi = &body.Divisi
+		// Sinkronkan divisi pada tabel pendaftaran jika sudah ada
+		var pendaftar models.Pendaftaran
+		if err := config.DB.Where("id_user = ?", p.IDUser).First(&pendaftar).Error; err == nil {
+			pendaftar.Divisi = body.Divisi
+			_ = config.DB.Save(&pendaftar)
+		}
+	}
 	if body.NoHP != nil {
 		p.NoHP = body.NoHP
 	}
@@ -146,6 +155,30 @@ func UpdatePeserta(c *gin.Context) {
 			return
 		}
 		p.IDUser = body.IDUser
+	}
+
+	// Update associated User credentials (Nama and Email)
+	var user models.User
+	if err := config.DB.First(&user, p.IDUser).Error; err == nil {
+		updated := false
+		if body.Nama != "" {
+			user.Nama = strings.TrimSpace(body.Nama)
+			updated = true
+		}
+		if body.Email != "" {
+			user.Email = strings.TrimSpace(strings.ToLower(body.Email))
+			updated = true
+		}
+		if updated {
+			if err := config.DB.Save(&user).Error; err != nil {
+				if strings.Contains(strings.ToLower(err.Error()), "duplicate") {
+					utils.JSONError(c, http.StatusConflict, "email sudah terdaftar", nil)
+					return
+				}
+				utils.JSONError(c, http.StatusInternalServerError, "gagal memperbarui data user", nil)
+				return
+			}
+		}
 	}
 
 	if err := config.DB.Save(&p).Error; err != nil {
@@ -178,9 +211,12 @@ func DeletePeserta(c *gin.Context) {
 
 type pesertaUpdateBody struct {
 	IDUser       uint    `json:"id_user"`
+	Nama         string  `json:"nama" binding:"omitempty,max=100"`
+	Email        string  `json:"email" binding:"omitempty,email,max=100"`
 	NimNis       string  `json:"nim_nis" binding:"omitempty,max=50"`
 	AsalInstansi string  `json:"asal_instansi" binding:"omitempty,max=150"`
 	Jurusan      string  `json:"jurusan" binding:"omitempty,max=100"`
+	Divisi       string  `json:"divisi" binding:"omitempty"`
 	NoHP         *string `json:"no_hp" binding:"omitempty,max=20"`
 	StatusPKL    string  `json:"status_pkl" binding:"omitempty,oneof=pending diterima ditolak selesai"`
 }

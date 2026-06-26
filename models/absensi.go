@@ -26,11 +26,12 @@ func (a *Absensi) FillKeterangan(jamMasuk string) {
 	if jamMasuk == "" {
 		jamMasuk = "08:00"
 	}
-	if a.Status == "telat" {
+	switch a.Status {
+	case "telat":
 		a.Keterangan = "Terlambat — absen masuk melewati jam " + jamMasuk
-	} else if a.Status == "hadir" {
+	case "hadir":
 		a.Keterangan = "Hadir tepat waktu — absen masuk pada atau sebelum jam " + jamMasuk
-	} else if a.Status == "tidak hadir" {
+	case "tidak hadir":
 		a.Keterangan = "Tidak hadir / Alpha"
 	}
 }

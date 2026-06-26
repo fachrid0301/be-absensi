@@ -147,16 +147,16 @@ func AbsensiMasuk(c *gin.Context) {
 		}
 	}
 
+	status := "hadir"
 	if isLate {
-		utils.JSONError(c, http.StatusBadRequest, "batas waktu absensi masuk telah lewat ("+jadwal.JamMasuk+")", nil)
-		return
+		status = "telat"
 	}
 
 	abs := models.Absensi{
 		IDPeserta: peserta.IDPeserta,
 		Tanggal:   today,
 		JamMasuk:  &jam,
-		Status:    "hadir",
+		Status:    status,
 		Foto:      &fotoPath,
 		Lokasi:    &lokasi,
 	}
@@ -167,7 +167,14 @@ func AbsensiMasuk(c *gin.Context) {
 	}
 
 	abs.FillKeterangan(jadwal.JamMasuk)
-	utils.JSONSuccess(c, http.StatusCreated, "absensi masuk berhasil", abs)
+	msg := "absensi masuk berhasil"
+	if isLate {
+		msg = "absensi masuk berhasil (telat)"
+		utils.RecordActivity(claims.IDUser, "Absensi masuk (Telat)")
+	} else {
+		utils.RecordActivity(claims.IDUser, "Absensi masuk")
+	}
+	utils.JSONSuccess(c, http.StatusCreated, msg, abs)
 }
 
 // AbsensiPulang catat pulang setelah absen masuk, sesuai jam pulang jadwal.
@@ -250,6 +257,7 @@ func AbsensiPulang(c *gin.Context) {
 		return
 	}
 
+	utils.RecordActivity(claims.IDUser, "Absensi pulang")
 	utils.JSONSuccess(c, http.StatusOK, "absensi pulang berhasil", abs)
 }
 

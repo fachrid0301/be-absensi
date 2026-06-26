@@ -79,6 +79,7 @@ func CreatePendaftaran(c *gin.Context) {
 		return
 	}
 	_ = config.DB.Preload("User").First(&p, p.IDPendaftaran)
+	utils.RecordActivity(claims.IDUser, "Mengajukan pendaftaran PKL")
 	utils.JSONSuccess(c, http.StatusCreated, "pendaftaran berhasil dikirim", p)
 }
 
@@ -152,5 +153,7 @@ func VerifikasiPendaftaran(c *gin.Context) {
 	}
 
 	_ = config.DB.Preload("User").First(&p, p.IDPendaftaran)
+	// Catat log ke user yang mendaftar
+	utils.RecordActivity(p.IDUser, "Pendaftaran PKL "+p.Status)
 	utils.JSONSuccess(c, http.StatusOK, "pendaftaran berhasil diverifikasi", p)
 }

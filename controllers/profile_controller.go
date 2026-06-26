@@ -34,7 +34,13 @@ func Profile(c *gin.Context) {
 		if peserta.Divisi != nil {
 			data["divisi"] = *peserta.Divisi
 		} else {
-			data["divisi"] = nil
+			// Fallback: ambil divisi dari tabel pendaftaran jika belum disetujui (diterima) oleh admin
+			var pendaftar models.Pendaftaran
+			if errPendaftar := config.DB.Where("id_user = ?", claims.IDUser).First(&pendaftar).Error; errPendaftar == nil {
+				data["divisi"] = pendaftar.Divisi
+			} else {
+				data["divisi"] = nil
+			}
 		}
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		utils.JSONError(c, http.StatusInternalServerError, "gagal memuat profil", nil)

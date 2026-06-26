@@ -86,6 +86,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	utils.RecordActivity(u.IDUser, "Registrasi akun baru")
 	utils.JSONSuccess(c, http.StatusCreated, "registrasi berhasil", gin.H{
 		"user":    u.ToPublic(),
 		"peserta": peserta,
@@ -142,6 +143,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	utils.RecordActivity(u.IDUser, "Login ke sistem")
 	utils.JSONSuccess(c, http.StatusOK, "login berhasil", gin.H{
 		"token": token,
 		"user":  u.ToPublic(),

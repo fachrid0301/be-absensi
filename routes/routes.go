@@ -21,6 +21,7 @@ func Register(r *gin.Engine) {
 	{
 		auth.GET("/profile", controllers.Profile)
 		auth.GET("/jadwal", controllers.GetJadwal)
+		auth.GET("/log-aktivitas", controllers.ListLogAktivitas)
 
 		peserta := auth.Group("/peserta")
 		{

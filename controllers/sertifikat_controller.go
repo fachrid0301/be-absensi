@@ -70,6 +70,7 @@ func RequestSertifikat(c *gin.Context) {
 	}
 
 	_ = config.DB.Preload("Peserta").Preload("User").First(&s, s.IDSertifikat)
+	utils.RecordActivity(claims.IDUser, "Mengajukan permintaan berkas PKL")
 	utils.JSONSuccess(c, http.StatusCreated, "permintaan berkas berhasil dikirim", s)
 }
 
@@ -222,6 +223,9 @@ func VerifikasiSertifikat(c *gin.Context) {
 	msg := "permintaan berkas ditolak"
 	if status == "diberikan" {
 		msg = "berkas berhasil diberikan"
+		utils.RecordActivity(s.IDUser, "Berkas PKL telah diberikan oleh admin")
+	} else {
+		utils.RecordActivity(s.IDUser, "Permintaan berkas PKL ditolak oleh admin")
 	}
 	utils.JSONSuccess(c, http.StatusOK, msg, s)
 }
