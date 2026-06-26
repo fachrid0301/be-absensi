@@ -3,8 +3,8 @@ package models
 import "time"
 
 type Pendaftaran struct {
-	IDPendaftaran    uint      `gorm:"column:id_pendaftaran;primaryKey;autoIncrement" json:"id_pendaftaran"`
-	IDUser           uint      `gorm:"column:id_user;not null" json:"id_user"`
+	IDPendaftaran    uint      `gorm:"column:id_pendaftaran;type:int;primaryKey;autoIncrement" json:"id_pendaftaran"`
+	IDUser           uint      `gorm:"column:id_user;type:int;not null" json:"id_user"`
 	Divisi           string    `gorm:"column:divisi;type:enum('Software Engineering','Data Analyst','Computer Network','Multimedia','Cyber Security');not null" json:"divisi"`
 	FileSurat        string    `gorm:"column:file_surat;size:255;not null" json:"file_surat"`
 	FileCV           string    `gorm:"column:file_cv;size:255;not null" json:"file_cv"`

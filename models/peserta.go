@@ -20,8 +20,8 @@ func ValidDivisi(value string) bool {
 }
 
 type Peserta struct {
-	IDPeserta    uint      `gorm:"column:id_peserta;primaryKey;autoIncrement" json:"id_peserta"`
-	IDUser       uint      `gorm:"column:id_user;not null" json:"id_user"`
+	IDPeserta    uint      `gorm:"column:id_peserta;type:int;primaryKey;autoIncrement" json:"id_peserta"`
+	IDUser       uint      `gorm:"column:id_user;type:int;not null" json:"id_user"`
 	NimNis       string    `gorm:"column:nim_nis;size:50;not null" json:"nim_nis"`
 	AsalInstansi string    `gorm:"column:asal_instansi;size:150;not null" json:"asal_instansi"`
 	Jurusan      string    `gorm:"column:jurusan;size:100;not null" json:"jurusan"`

@@ -66,6 +66,7 @@ func main() {
 	); err != nil {
 		log.Printf("gagal auto migrate: %v", err)
 	}
+	config.EnsureSchema()
 	// Seed default jadwal jika belum ada
 	var count int64
 	if err := config.DB.Model(&models.Jadwal{}).Count(&count).Error; err == nil && count == 0 {

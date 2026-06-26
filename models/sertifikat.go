@@ -36,9 +36,9 @@ func (s *StringSlice) Scan(value interface{}) error {
 }
 
 type Sertifikat struct {
-	IDSertifikat     uint         `gorm:"column:id_sertifikat;primaryKey;autoIncrement" json:"id_sertifikat"`
-	IDPeserta        uint         `gorm:"column:id_peserta;not null" json:"id_peserta"`
-	IDUser           uint         `gorm:"column:id_user;not null" json:"id_user"`
+	IDSertifikat     uint         `gorm:"column:id_sertifikat;type:int;primaryKey;autoIncrement" json:"id_sertifikat"`
+	IDPeserta        uint         `gorm:"column:id_peserta;type:int;not null" json:"id_peserta"`
+	IDUser           uint         `gorm:"column:id_user;type:int;not null" json:"id_user"`
 	Status           string       `gorm:"column:status;type:enum('pending','diberikan','ditolak');default:pending" json:"status"`
 	FileSertifikat   *string      `gorm:"column:file_sertifikat;size:255" json:"file_sertifikat,omitempty"`
 	FileBerkas       *StringSlice `gorm:"column:file_berkas;type:text" json:"file_berkas,omitempty"`
